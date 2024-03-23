@@ -2,9 +2,10 @@
   mkShell,
   statix,
   deadnix,
+  rust-analyzer,
+  clippy,
   rustc,
   cargo,
-  clippy,
 }:
 mkShell {
   packages = [
@@ -12,9 +13,12 @@ mkShell {
     statix
     deadnix
 
-    # Rust
+    # Develop
+rust-analyzer
+    clippy
+
+# Build
     rustc
     cargo
-    clippy
   ];
 }
