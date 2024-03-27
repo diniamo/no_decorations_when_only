@@ -124,6 +124,7 @@ fn main() {
         }
     } });
     listener.add_fullscreen_state_change_handler(enclose! { (workspace_rules) move |_| update_window_decorations(&Workspace::get_active().expect("Failed to get active workspace"), &workspace_rules) });
+    // TODO: add update on reload
 
     listener.start_listener().expect("Couldn't start listener");
 }
