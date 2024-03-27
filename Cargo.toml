@@ -7,5 +7,5 @@ edition = "2021"
 
 [dependencies]
 single-instance = "0.3.3"
-hyprland = { git = "https://github.com/hyprland-community/hyprland-rs.git", rev = "056d66a51a7ed3293d2006c27c0136da13ad109a" }
+hyprland = { git = "https://github.com/hyprland-community/hyprland-rs.git", rev = "5334cd237db771aad84a1bfdd3126487353d7528" }
 # hyprland = { src = "/hdd/dev/hyprland-rs" }

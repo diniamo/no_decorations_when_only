@@ -12,7 +12,13 @@ in
 
     src = ./.;
 
-    cargoLock.lockFile = ./Cargo.lock;
+    cargoLock = {
+      lockFile = ./Cargo.lock;
+      # TODO: remove this when hyprland-rs gets re-released
+      outputHashes = {
+          "hyprland-0.3.13" = "sha256-oAq2ykZorpYcAywpInx7ihgFSiUQkVbGItBk616XWe0=";
+      };
+    };
 
     meta = with lib; {
       description = "A Rust program that utilizies Hyprland's ipc to remove decorations when there is only one window in the workspace";
