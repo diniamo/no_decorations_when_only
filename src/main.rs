@@ -53,10 +53,11 @@ fn format_for_command(ruleset: &WorkspaceRuleset) -> String {
 }
 
 fn get_workspace(name: &str) -> Option<Workspace> {
+    println!("Getting worrkspace {name}");
     Workspaces::get()
         .expect("Failed to get workspaces")
         .into_iter()
-        .find(|w| w.name == name)
+        .find(|w| { println!("Comparing {}", w.name); w.name == name })
 }
 
 // https://github.com/rust-lang/rfcs/issues/2407#issuecomment-385291238
@@ -83,7 +84,11 @@ fn main() {
 
     let mut listener = EventListener::new();
 
-    listener.add_window_open_handler(enclose! { (workspace_rules) move |e| update_window_decorations(&get_workspace(&e.workspace_name).unwrap(), &workspace_rules) });
+    listener.add_window_open_handler(enclose! { (workspace_rules) move |e| {
+        if !e.workspace_name.starts_with("special:") {
+            update_window_decorations(&get_workspace(&e.workspace_name).unwrap(), &workspace_rules)
+        }
+    } });
     // TODO: windows can also close on other workspaces
     listener.add_window_close_handler(enclose! { (workspace_rules) move |_| update_window_decorations(&Workspace::get_active().expect("Failed to get active workspace"), &workspace_rules) });
     listener.add_window_moved_handler(enclose! { (workspace_rules) move |e| update_window_decorations(&get_workspace(&e.workspace_name).unwrap(), &workspace_rules) });
