@@ -1,38 +1,60 @@
 use std::{process, rc::Rc};
 
+use hyprland::{
+    ctl,
+    data::{Workspace, WorkspaceRules, WorkspaceRuleset, Workspaces},
+    event_listener::EventListener,
+    keyword::Keyword,
+    shared::{HyprData, HyprDataActive, WorkspaceType},
+};
 use single_instance::SingleInstance;
-use hyprland::{ctl, data::{Workspace, WorkspaceRules, WorkspaceRuleset, Workspaces}, event_listener::EventListener, keyword::Keyword, shared::{HyprData, HyprDataActive, WorkspaceType}};
 
 #[inline]
-fn get_ruleset_from_workspace<'a>(workspace_rules: &'a WorkspaceRules, workspace: &Workspace) -> &'a WorkspaceRuleset {
-    workspace_rules.iter().find(|r| r.workspace_string == workspace.name).unwrap()
+fn get_ruleset_from_workspace<'a>(
+    workspace_rules: &'a WorkspaceRules,
+    workspace: &Workspace,
+) -> &'a WorkspaceRuleset {
+    workspace_rules
+        .iter()
+        .find(|r| r.workspace_string == workspace.name)
+        .unwrap()
 }
 
 fn update_window_decorations(workspace: &Workspace, workspace_rules: &WorkspaceRules) {
     if workspace.fullscreen || workspace.windows == 1 {
         let ruleset = get_ruleset_from_workspace(workspace_rules, workspace);
 
-        Keyword::set("workspace", format!("{},{}", workspace.id, format_for_command(&WorkspaceRuleset {
-            gaps_in: Some(vec![0, 0, 0, 0]),
-            gaps_out: Some(vec![0, 0, 0, 0]),
-            border: Some(false),
-            rounding: Some(false),
-            ..(ruleset.clone())
-        }))).expect("Failed to set keyword");
+        Keyword::set(
+            "workspace",
+            format!(
+                "{},{}",
+                workspace.id,
+                format_for_command(&WorkspaceRuleset {
+                    gaps_in: Some(vec![0, 0, 0, 0]),
+                    gaps_out: Some(vec![0, 0, 0, 0]),
+                    border: Some(false),
+                    rounding: Some(false),
+                    ..(ruleset.clone())
+                })
+            ),
+        )
+        .expect("Failed to set keyword");
     } else if workspace.windows > 1 {
         let ruleset = get_ruleset_from_workspace(workspace_rules, workspace);
-        Keyword::set("workspace", format!("{},{}", workspace.id, format_for_command(ruleset))).expect("Failed to set keyword");
+        Keyword::set(
+            "workspace",
+            format!("{},{}", workspace.id, format_for_command(ruleset)),
+        )
+        .expect("Failed to set keyword");
     }
 }
 
 macro_rules! format_rule {
-    ($vector: expr, $final_name: expr, $value: expr) => {
-        {
-            if $value.is_some() {
-                $vector.push(format!("{}:{}", $final_name, $value.unwrap()));
-            }
+    ($vector: expr, $final_name: expr, $value: expr) => {{
+        if $value.is_some() {
+            $vector.push(format!("{}:{}", $final_name, $value.unwrap()));
         }
-    };
+    }};
 }
 
 fn format_for_command(ruleset: &WorkspaceRuleset) -> String {
@@ -53,11 +75,10 @@ fn format_for_command(ruleset: &WorkspaceRuleset) -> String {
 }
 
 fn get_workspace(name: &str) -> Option<Workspace> {
-    println!("Getting worrkspace {name}");
     Workspaces::get()
         .expect("Failed to get workspaces")
         .into_iter()
-        .find(|w| { println!("Comparing {}", w.name); w.name == name })
+        .find(|w| w.name == name)
 }
 
 // https://github.com/rust-lang/rfcs/issues/2407#issuecomment-385291238
@@ -73,7 +94,9 @@ macro_rules! enclose {
 fn main() {
     let instance = SingleInstance::new(env!("CARGO_PKG_NAME")).unwrap();
     if !instance.is_single() {
-        eprintln!("There is already another instance running! Close it before trying to run a new one");
+        eprintln!(
+            "There is already another instance running! Close it before trying to run a new one"
+        );
         process::exit(1);
     }
 
