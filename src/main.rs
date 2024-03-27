@@ -13,16 +13,15 @@ use single_instance::SingleInstance;
 fn get_ruleset_from_workspace<'a>(
     workspace_rules: &'a WorkspaceRules,
     workspace: &Workspace,
-) -> &'a WorkspaceRuleset {
+) -> Option<&'a WorkspaceRuleset> {
     workspace_rules
         .iter()
-        .find(|r| r.workspace_string == workspace.name)
-        .unwrap()
+        .find(|r| r.workspace_string == workspace.id.to_string())
 }
 
 fn update_window_decorations(workspace: &Workspace, workspace_rules: &WorkspaceRules) {
     if workspace.fullscreen || workspace.windows == 1 {
-        let ruleset = get_ruleset_from_workspace(workspace_rules, workspace);
+        let ruleset = get_ruleset_from_workspace(workspace_rules, workspace).unwrap();
 
         Keyword::set(
             "workspace",
@@ -40,7 +39,7 @@ fn update_window_decorations(workspace: &Workspace, workspace_rules: &WorkspaceR
         )
         .expect("Failed to set keyword");
     } else if workspace.windows > 1 {
-        let ruleset = get_ruleset_from_workspace(workspace_rules, workspace);
+        let ruleset = get_ruleset_from_workspace(workspace_rules, workspace).unwrap();
         Keyword::set(
             "workspace",
             format!("{},{}", workspace.id, format_for_command(ruleset)),

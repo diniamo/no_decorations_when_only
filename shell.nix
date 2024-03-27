@@ -4,6 +4,7 @@
   deadnix,
   rust-analyzer,
   clippy,
+  rustfmt,
   rustc,
   cargo,
 }:
@@ -14,8 +15,9 @@ mkShell {
     deadnix
 
     # Develop
-rust-analyzer
+    rust-analyzer
     clippy
+    rustfmt
 
 # Build
     rustc
