@@ -3,7 +3,7 @@ use std::{process, rc::Rc};
 use hyprland::{
     ctl,
     data::{Workspace, WorkspaceRules, WorkspaceRuleset, Workspaces},
-    event_listener::EventListener,
+    event_listener::{EventListener, WindowMoveEvent},
     keyword::Keyword,
     shared::{HyprData, HyprDataActive, WorkspaceType},
 };
@@ -104,8 +104,14 @@ fn main() {
     ctl::reload::call().expect("Failed to reload Hyprland");
 
     let workspace_rules = Rc::new(WorkspaceRules::get().expect("Failed to get workspacerules"));
+    // TODO: update on the workspace on every monitor
+    update_window_decorations(
+        &Workspace::get_active().expect("Failed to get active workspace"),
+        &workspace_rules,
+    );
 
     let mut listener = EventListener::new();
+    WindowMoveEvent
 
     listener.add_window_open_handler(enclose! { (workspace_rules) move |e| {
         if !e.workspace_name.starts_with("special:") {
@@ -114,8 +120,9 @@ fn main() {
     } });
     // TODO: windows can also close on other workspaces
     listener.add_window_close_handler(enclose! { (workspace_rules) move |_| update_window_decorations(&Workspace::get_active().expect("Failed to get active workspace"), &workspace_rules) });
+    // TODO: also update the workspace it was moved from
     listener.add_window_moved_handler(enclose! { (workspace_rules) move |e| update_window_decorations(&get_workspace(&e.workspace_name).unwrap(), &workspace_rules) });
-    // TODO: windows can also close on other workspaces
+    // TODO: window floating state can also change on other workspaces
     listener.add_float_state_handler(enclose ! { (workspace_rules) move |_| update_window_decorations(&Workspace::get_active().expect("Failed to get active workspace"), &workspace_rules) });
     // HACK: remove this once the other TODOs are done
     listener.add_workspace_change_handler(enclose! { (workspace_rules) move |t| {
@@ -125,6 +132,7 @@ fn main() {
     } });
     listener.add_fullscreen_state_change_handler(enclose! { (workspace_rules) move |_| update_window_decorations(&Workspace::get_active().expect("Failed to get active workspace"), &workspace_rules) });
     // TODO: add update on reload
+    // listener.add_config_reloaded_handler(enclose! { (workspace_rules) move || update_window_decorations(&Workspace::get_active().expect("Failed to get active workspace"), &workspace_rules) });
 
     listener.start_listener().expect("Couldn't start listener");
 }
