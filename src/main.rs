@@ -3,7 +3,7 @@ use std::{process, rc::Rc};
 use hyprland::{
     ctl,
     data::{Workspace, WorkspaceRules, WorkspaceRuleset, Workspaces},
-    event_listener::{EventListener, WindowMoveEvent},
+    event_listener::EventListener,
     keyword::Keyword,
     shared::{HyprData, HyprDataActive, WorkspaceType},
 };
@@ -111,7 +111,6 @@ fn main() {
     );
 
     let mut listener = EventListener::new();
-    WindowMoveEvent
 
     listener.add_window_open_handler(enclose! { (workspace_rules) move |e| {
         if !e.workspace_name.starts_with("special:") {
