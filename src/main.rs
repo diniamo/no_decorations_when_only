@@ -2,7 +2,7 @@ use std::{process, rc::Rc};
 
 use hyprland::{
     ctl,
-    data::{Workspace, WorkspaceRules, WorkspaceRuleset, Workspaces},
+    data::{Monitors, Workspace, WorkspaceBasic, WorkspaceRules, WorkspaceRuleset, Workspaces},
     event_listener::EventListener,
     keyword::Keyword,
     shared::{HyprData, HyprDataActive, WorkspaceType},
@@ -12,7 +12,7 @@ use single_instance::SingleInstance;
 #[inline]
 fn get_workspace(name: &str) -> Option<Workspace> {
     Workspaces::get()
-        .expect("Failed to get workspaces")
+        .unwrap()
         .into_iter()
         .find(|w| w.name == name)
 }
@@ -28,7 +28,7 @@ fn get_ruleset_from_workspace<'a>(
 }
 
 macro_rules! format_rule {
-    ($vector: expr, $final_name: expr, $value: expr) => {{
+    ($vector:expr, $final_name:expr, $value:expr) => {{
         if $value.is_some() {
             $vector.push(format!("{}:{}", $final_name, $value.unwrap()));
         }
@@ -70,15 +70,23 @@ fn update_window_decorations(workspace: &Workspace, workspace_rules: &WorkspaceR
                 })
             ),
         )
-        .expect("Failed to set keyword");
+        .unwrap();
     } else if workspace.windows > 1 {
         let ruleset = get_ruleset_from_workspace(workspace_rules, workspace).unwrap();
         Keyword::set(
             "workspace",
             format!("{},{}", workspace.id, format_for_command(ruleset)),
         )
-        .expect("Failed to set keyword");
+        .unwrap();
     }
+}
+
+fn update_active_workspaces(workspace_rules: &WorkspaceRules) {
+    Monitors::get()
+        .unwrap()
+        .iter()
+        .map(|m| get_workspace(&m.active_workspace.name).unwrap())
+        .for_each(|w| update_window_decorations(&w, workspace_rules))
 }
 
 // https://github.com/rust-lang/rfcs/issues/2407#issuecomment-385291238
@@ -101,37 +109,38 @@ fn main() {
     }
 
     // To reset changes by a potenetial previous instance
-    ctl::reload::call().expect("Failed to reload Hyprland");
+    ctl::reload::call().unwrap();
 
-    let workspace_rules = Rc::new(WorkspaceRules::get().expect("Failed to get workspacerules"));
-    // TODO: update on the workspace on every monitor
-    update_window_decorations(
-        &Workspace::get_active().expect("Failed to get active workspace"),
-        &workspace_rules,
-    );
+    let workspace_rules = Rc::new(WorkspaceRules::get().unwrap());
+    update_window_decorations(&Workspace::get_active().unwrap(), &workspace_rules);
 
     let mut listener = EventListener::new();
 
+    // TODO: add update on reload
+    // listener.add_config_reloaded_handler(enclose! { (workspace_rules) move || update_window_decorations(&Workspace::get_active().unwrap(), &workspace_rules) });
+    listener.add_window_close_handler(
+        enclose! { (workspace_rules) move |_| update_active_workspaces(&workspace_rules) },
+    );
+    listener.add_window_moved_handler(
+        enclose! { (workspace_rules) move |_| update_active_workspaces(&workspace_rules) },
+    );
+    listener.add_fullscreen_state_change_handler(
+        enclose! { (workspace_rules) move |_| update_active_workspaces(&workspace_rules) },
+    );
+    // listener.add_float_state_handler(enclose! { (workspace_rules) move |_| update_active_workspaces(&workspace_rules)});
+    listener.add_active_monitor_change_handler(
+        enclose! { (workspace_rules) move |_| update_active_workspaces(&workspace_rules)},
+    );
     listener.add_window_open_handler(enclose! { (workspace_rules) move |e| {
         if !e.workspace_name.starts_with("special:") {
             update_window_decorations(&get_workspace(&e.workspace_name).unwrap(), &workspace_rules)
         }
     } });
-    // TODO: windows can also close on other workspaces
-    listener.add_window_close_handler(enclose! { (workspace_rules) move |_| update_window_decorations(&Workspace::get_active().expect("Failed to get active workspace"), &workspace_rules) });
-    // TODO: also update the workspace it was moved from
-    listener.add_window_moved_handler(enclose! { (workspace_rules) move |e| update_window_decorations(&get_workspace(&e.workspace_name).unwrap(), &workspace_rules) });
-    // TODO: window floating state can also change on other workspaces
-    listener.add_float_state_handler(enclose ! { (workspace_rules) move |_| update_window_decorations(&Workspace::get_active().expect("Failed to get active workspace"), &workspace_rules) });
-    // HACK: remove this once the other TODOs are done
     listener.add_workspace_change_handler(enclose! { (workspace_rules) move |t| {
         if let WorkspaceType::Regular(name) = t {
             update_window_decorations(&get_workspace(&name).unwrap(), &workspace_rules)
         }
     } });
-    listener.add_fullscreen_state_change_handler(enclose! { (workspace_rules) move |_| update_window_decorations(&Workspace::get_active().expect("Failed to get active workspace"), &workspace_rules) });
-    // TODO: add update on reload
-    // listener.add_config_reloaded_handler(enclose! { (workspace_rules) move || update_window_decorations(&Workspace::get_active().expect("Failed to get active workspace"), &workspace_rules) });
 
-    listener.start_listener().expect("Couldn't start listener");
+    listener.start_listener().unwrap();
 }
