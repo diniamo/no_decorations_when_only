@@ -19,14 +19,16 @@
         ...
       }: let
         inherit (pkgs) callPackage;
+
+        noDecorationsWhenOnly = callPackage ./. {};
       in {
         formatter = pkgs.alejandra;
 
-        devShells.default = callPackage ./shell.nix {};
+        devShells.default = callPackage ./shell.nix {inherit noDecorationsWhenOnly;};
 
-        packages = rec {
-          default = callPackage ./. {};
-          no_decorations_when_only = default;
+        packages = {
+          default = noDecorationsWhenOnly;
+          inherit noDecorationsWhenOnly;
         };
       };
 

@@ -5,10 +5,10 @@
   rust-analyzer,
   clippy,
   rustfmt,
-  rustc,
-  cargo,
+  noDecorationsWhenOnly,
 }:
 mkShell {
+  inputsFrom = [noDecorationsWhenOnly];
   packages = [
     # Nix
     statix
@@ -18,9 +18,5 @@ mkShell {
     rust-analyzer
     clippy
     rustfmt
-
-# Build
-    rustc
-    cargo
   ];
 }

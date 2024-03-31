@@ -6,17 +6,20 @@
 
   cargoToml = builtins.fromTOML (builtins.readFile ./Cargo.toml);
 in
-  buildRustPackage {
+  buildRustPackage rec {
     pname = cargoToml.package.name;
     version = cargoToml.package.version;
 
-    src = ./.;
+    src = builtins.path {
+      name = "${pname}-source";
+      path = ./.;
+    };
 
     cargoLock = {
       lockFile = ./Cargo.lock;
       # TODO: remove this when hyprland-rs gets re-released
       outputHashes = {
-          "hyprland-0.3.13" = "sha256-oAq2ykZorpYcAywpInx7ihgFSiUQkVbGItBk616XWe0=";
+        "hyprland-0.3.13" = "sha256-oAq2ykZorpYcAywpInx7ihgFSiUQkVbGItBk616XWe0=";
       };
     };
 
