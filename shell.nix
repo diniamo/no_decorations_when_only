@@ -5,10 +5,10 @@
   rust-analyzer,
   clippy,
   rustfmt,
-  noDecorationsWhenOnly,
+  no_decorations_when_only,
 }:
 mkShell {
-  inputsFrom = [noDecorationsWhenOnly];
+  inputsFrom = [no_decorations_when_only];
   packages = [
     # Nix
     statix
