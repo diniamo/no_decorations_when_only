@@ -2,7 +2,7 @@ use std::{process, rc::Rc};
 
 use hyprland::{
     ctl,
-    data::{Monitors, Workspace, WorkspaceBasic, WorkspaceRules, WorkspaceRuleset, Workspaces},
+    data::{Monitors, Workspace, WorkspaceRules, WorkspaceRuleset, Workspaces},
     event_listener::EventListener,
     keyword::Keyword,
     shared::{HyprData, HyprDataActive, WorkspaceType},
