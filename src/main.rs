@@ -7,8 +7,9 @@ use hyprland::{
     keyword::Keyword,
     shared::{HyprData, WorkspaceType},
 };
-use no_decoration_when_only::{format_for_command, get_ruleset_from_workspace, get_workspace};
 use single_instance::SingleInstance;
+
+mod utils;
 
 struct State {
     initial_rules: WorkspaceRules,
@@ -40,14 +41,15 @@ impl State {
         }
 
         if new_state {
-            let ruleset = get_ruleset_from_workspace(&self.initial_rules, workspace).unwrap();
+            let ruleset =
+                utils::get_ruleset_from_workspace(&self.initial_rules, workspace).unwrap();
 
             Keyword::set(
                 "workspace",
                 format!(
                     "{},{}",
                     workspace.id,
-                    format_for_command(&WorkspaceRuleset {
+                    utils::format_for_command(&WorkspaceRuleset {
                         gaps_in: Some(vec![0, 0, 0, 0]),
                         gaps_out: Some(vec![0, 0, 0, 0]),
                         border: Some(false),
@@ -58,10 +60,11 @@ impl State {
             )
             .unwrap();
         } else {
-            let ruleset = get_ruleset_from_workspace(&self.initial_rules, workspace).unwrap();
+            let ruleset =
+                utils::get_ruleset_from_workspace(&self.initial_rules, workspace).unwrap();
             Keyword::set(
                 "workspace",
-                format!("{},{}", workspace.id, format_for_command(ruleset)),
+                format!("{},{}", workspace.id, utils::format_for_command(ruleset)),
             )
             .unwrap();
         }
@@ -74,7 +77,7 @@ impl State {
         Monitors::get()
             .unwrap()
             .iter()
-            .map(|m| get_workspace(&m.active_workspace.name).unwrap())
+            .map(|m| utils::get_workspace(&m.active_workspace.name).unwrap())
             .for_each(|w| self.update_window_decorations(&w))
     }
 }
@@ -123,12 +126,12 @@ fn main() {
     );
     listener.add_window_open_handler(enclose! { (state) move |e| {
         if !e.workspace_name.starts_with("special:") {
-            state.borrow_mut().update_window_decorations(&get_workspace(&e.workspace_name).unwrap());
+            state.borrow_mut().update_window_decorations(&utils::get_workspace(&e.workspace_name).unwrap());
         }
     } });
     listener.add_workspace_change_handler(enclose! { (state) move |t| {
         if let WorkspaceType::Regular(name) = t {
-            state.borrow_mut().update_window_decorations(&get_workspace(&name).unwrap());
+            state.borrow_mut().update_window_decorations(&utils::get_workspace(&name).unwrap());
         }
     } });
 
