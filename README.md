@@ -2,7 +2,7 @@
 
 A Hyprland IPC extension written in Rust to remove window decorations when only one window is visible
 
-There is currently no release cycle, so not using Nix isn't ideal.
+There is currently no release cycle, so using this outside of Nix isn't ideal.
 
 ## Usage
 
@@ -33,3 +33,8 @@ environment.systemPackages = [
 1. Clone the repository with `git clone https://github.com/diniamo/no_decorations_when_only.git`
 2. Run `cargo build --release` in the project root
 3. Run the binary (found at `target/release/no_decorations_when_only`) with `exec-once`
+
+## Known issues
+
+- The program will break when the Hyprland configuration is reloaded, since the event for that hasn't been added to Hyprland-rs. You can fix this by either restarting the program, or updating (going to the other state and back) your workspaces.
+- There is a crash that happens sometimes, but I have no idea how to reproduce it.
