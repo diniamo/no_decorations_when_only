@@ -24,7 +24,20 @@
       in {
         formatter = pkgs.alejandra;
 
-        devShells.default = callPackage ./shell.nix {inherit no_decorations_when_only;};
+        devShells.default = pkgs.mkShell {
+          inputsFrom = [no_decorations_when_only];
+          packages = with pkgs; [
+            # Nix
+            alejandra
+            statix
+            deadnix
+
+            # Develop
+            rust-analyzer
+            clippy
+            rustfmt
+          ];
+        };
 
         packages = {
           default = no_decorations_when_only;
