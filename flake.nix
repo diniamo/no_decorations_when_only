@@ -18,9 +18,7 @@
         system,
         ...
       }: let
-        inherit (pkgs) callPackage;
-
-        no_decorations_when_only = callPackage ./. {};
+        no_decorations_when_only = pkgs.callPackage ./. {};
       in {
         formatter = pkgs.alejandra;
 
