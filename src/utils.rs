@@ -5,10 +5,10 @@ use hyprland::{
 
 #[inline]
 pub fn get_workspace(name: &str) -> Option<Workspace> {
+    // HACK: this should not be able to fail
     Workspaces::get()
-        .unwrap()
-        .into_iter()
-        .find(|w| w.name == name)
+        .ok()
+        .and_then(|ws| ws.into_iter().find(|w| w.name == name))
 }
 
 #[inline]

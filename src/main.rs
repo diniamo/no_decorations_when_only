@@ -77,7 +77,7 @@ impl State {
         Monitors::get()
             .unwrap()
             .iter()
-            .map(|m| utils::get_workspace(&m.active_workspace.name).unwrap())
+            .filter_map(|m| utils::get_workspace(&m.active_workspace.name))
             .for_each(|w| self.update_window_decorations(&w))
     }
 }
@@ -125,13 +125,17 @@ fn main() {
         enclose! { (state) move |_| state.borrow_mut().update_active_workspaces() },
     );
     listener.add_window_open_handler(enclose! { (state) move |e| {
-        if !e.workspace_name.starts_with("special:") {
-            state.borrow_mut().update_window_decorations(&utils::get_workspace(&e.workspace_name).unwrap());
+        if !e.workspace_name.starts_with("special:"){
+            if let Some(w) = utils::get_workspace(&e.workspace_name) {
+            state.borrow_mut().update_window_decorations(&w);
+                }
         }
     } });
     listener.add_workspace_change_handler(enclose! { (state) move |t| {
-        if let WorkspaceType::Regular(name) = t {
-            state.borrow_mut().update_window_decorations(&utils::get_workspace(&name).unwrap());
+        if let WorkspaceType::Regular(name) = t{
+            if let Some(w) = utils::get_workspace(&name) {
+            state.borrow_mut().update_window_decorations(&w);
+            }
         }
     } });
 
