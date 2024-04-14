@@ -13,11 +13,7 @@
     flake-parts.lib.mkFlake {inherit inputs;} {
       systems = ["x86_64-linux" "aarch64-linux"];
 
-      perSystem = {
-        pkgs,
-        system,
-        ...
-      }: let
+      perSystem = {pkgs, ...}: let
         no_decorations_when_only = pkgs.callPackage ./. {};
       in {
         formatter = pkgs.alejandra;
