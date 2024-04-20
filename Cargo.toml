@@ -5,5 +5,5 @@ edition = "2021"
 
 [dependencies]
 single-instance = "0.3.3"
-hyprland = { git = "https://github.com/hyprland-community/hyprland-rs.git", rev = "5334cd237db771aad84a1bfdd3126487353d7528" }
-# hyprland = { git = "https://github.com/diniamo/hyprland-rs.git", branch = "add-configreloaded-event" }
+# hyprland = { git = "https://github.com/hyprland-community/hyprland-rs.git", rev = "5334cd237db771aad84a1bfdd3126487353d7528" }
+hyprland = { git = "https://github.com/diniamo/hyprland-rs.git", rev = "6b951060bb73dd737dbb18a5b63527cd417ae3fb"}

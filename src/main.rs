@@ -101,16 +101,17 @@ fn main() {
         process::exit(1);
     }
 
+    let state = Rc::new(RefCell::new(State::new()));
+
     // To reset changes by a potenetial previous instance
     ctl::reload::call().unwrap();
-
-    let state = Rc::new(RefCell::new(State::new()));
     state.borrow_mut().update_active_workspaces();
 
     let mut listener = EventListener::new();
 
-    // TODO: add update on reload
-    // listener.add_config_reloaded_handler(enclose! { (workspace_rules) move || update_window_decorations(&Workspace::get_active().unwrap(), &workspace_rules) });
+    listener.add_config_reload_handler(
+        enclose! { (state) move |_| state.borrow_mut().update_active_workspaces() },
+    );
     listener.add_window_close_handler(
         enclose! { (state) move |_| state.borrow_mut().update_active_workspaces() },
     );
