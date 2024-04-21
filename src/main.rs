@@ -5,7 +5,7 @@ use hyprland::{
     data::{Monitors, Workspace, WorkspaceRules, WorkspaceRuleset},
     event_listener::EventListener,
     keyword::Keyword,
-    shared::{HyprData, WorkspaceType},
+    shared::{HyprData, HyprDataActive, WorkspaceType},
 };
 use single_instance::SingleInstance;
 
@@ -41,8 +41,7 @@ impl State {
         }
 
         if new_state {
-            let ruleset =
-                utils::get_ruleset_from_workspace(&self.initial_rules, workspace).unwrap();
+            let ruleset = utils::get_ruleset_from_workspace(&self.initial_rules, workspace);
 
             Keyword::set(
                 "workspace",
@@ -54,17 +53,17 @@ impl State {
                         gaps_out: Some(vec![0, 0, 0, 0]),
                         border: Some(false),
                         rounding: Some(false),
-                        ..(ruleset.clone())
+                        ..ruleset
                     })
                 ),
             )
             .unwrap();
         } else {
-            let ruleset =
-                utils::get_ruleset_from_workspace(&self.initial_rules, workspace).unwrap();
+            let ruleset = utils::get_ruleset_from_workspace(&self.initial_rules, workspace);
+
             Keyword::set(
                 "workspace",
-                format!("{},{}", workspace.id, utils::format_for_command(ruleset)),
+                format!("{},{}", workspace.id, utils::format_for_command(&ruleset)),
             )
             .unwrap();
         }
@@ -79,6 +78,11 @@ impl State {
             .iter()
             .filter_map(|m| utils::get_workspace(&m.active_workspace.name))
             .for_each(|w| self.update_window_decorations(&w));
+    }
+
+    #[inline]
+    fn update_active_workspace(&mut self) {
+        self.update_window_decorations(&Workspace::get_active().unwrap());
     }
 
     #[inline]
@@ -107,10 +111,10 @@ fn main() {
         process::exit(1);
     }
 
-    let state = Rc::new(RefCell::new(State::new()));
-
     // To reset changes by a potenetial previous instance
     ctl::reload::call().unwrap();
+
+    let state = Rc::new(RefCell::new(State::new()));
     state.borrow_mut().update_active_workspaces();
 
     let mut listener = EventListener::new();
@@ -123,23 +127,27 @@ fn main() {
         enclose! { (state) move |_| state.borrow_mut().update_active_workspaces() },
     );
     listener.add_fullscreen_state_change_handler(
-        enclose! { (state) move |_| state.borrow_mut().update_active_workspaces() },
+        enclose! { (state) move |_| state.borrow_mut().update_active_workspace() },
     );
     // listener.add_float_state_handler(enclose! { (workspace_rules) move |_| update_active_workspaces(&workspace_rules)});
-    listener.add_active_monitor_change_handler(
-        enclose! { (state) move |_| state.borrow_mut().update_active_workspaces() },
-    );
+    listener.add_active_monitor_change_handler(enclose! { (state) move |e| {
+        if let WorkspaceType::Regular(name) = e.workspace {
+            if let Some(workspace) = utils::get_workspace(&name) {
+                state.borrow_mut().update_window_decorations(&workspace);
+            }
+        }
+    } });
     listener.add_window_open_handler(enclose! { (state) move |e| {
         if !e.workspace_name.starts_with("special:") {
-            if let Some(w) = utils::get_workspace(&e.workspace_name) {
-                state.borrow_mut().update_window_decorations(&w);
+            if let Some(workspace) = utils::get_workspace(&e.workspace_name) {
+                state.borrow_mut().update_window_decorations(&workspace);
             }
         }
     } });
     listener.add_workspace_change_handler(enclose! { (state) move |t| {
         if let WorkspaceType::Regular(name) = t {
-            if let Some(w) = utils::get_workspace(&name) {
-                state.borrow_mut().update_window_decorations(&w);
+            if let Some(workspace) = utils::get_workspace(&name) {
+                state.borrow_mut().update_window_decorations(&workspace);
             }
         }
     } });

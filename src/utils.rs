@@ -12,13 +12,28 @@ pub fn get_workspace(name: &str) -> Option<Workspace> {
 }
 
 #[inline]
-pub fn get_ruleset_from_workspace<'a>(
-    workspace_rules: &'a WorkspaceRules,
+pub fn get_ruleset_from_workspace(
+    workspace_rules: &WorkspaceRules,
     workspace: &Workspace,
-) -> Option<&'a WorkspaceRuleset> {
+) -> WorkspaceRuleset {
+    let workspace_string = workspace.id.to_string();
     workspace_rules
         .iter()
-        .find(|r| r.workspace_string == workspace.id.to_string())
+        .find(|r| r.workspace_string == workspace_string)
+        .cloned()
+        .unwrap_or(WorkspaceRuleset {
+            workspace_string,
+            monitor: None,
+            default: None,
+            gaps_in: None,
+            border: None,
+            shadow: None,
+            gaps_out: None,
+            rounding: None,
+            decorate: None,
+            persistent: None,
+            border_size: None,
+        })
 }
 
 macro_rules! format_rules {
