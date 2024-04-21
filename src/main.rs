@@ -13,7 +13,7 @@ mod utils;
 
 struct State {
     initial_rules: WorkspaceRules,
-    toggle_cache: HashMap<String, bool>,
+    toggle_cache: HashMap<i32, bool>,
 }
 
 impl State {
@@ -33,7 +33,7 @@ impl State {
         if new_state
             == self
                 .toggle_cache
-                .get(&workspace.name)
+                .get(&workspace.id)
                 .copied()
                 .unwrap_or(false)
         {
@@ -69,7 +69,7 @@ impl State {
             .unwrap();
         }
 
-        self.toggle_cache.insert(workspace.name.clone(), new_state);
+        self.toggle_cache.insert(workspace.id, new_state);
     }
 
     #[inline]
@@ -78,7 +78,13 @@ impl State {
             .unwrap()
             .iter()
             .filter_map(|m| utils::get_workspace(&m.active_workspace.name))
-            .for_each(|w| self.update_window_decorations(&w))
+            .for_each(|w| self.update_window_decorations(&w));
+    }
+
+    #[inline]
+    fn reset(&mut self) {
+        self.toggle_cache.clear();
+        self.update_active_workspaces();
     }
 }
 
@@ -109,9 +115,7 @@ fn main() {
 
     let mut listener = EventListener::new();
 
-    listener.add_config_reload_handler(
-        enclose! { (state) move |_| state.borrow_mut().update_active_workspaces() },
-    );
+    listener.add_config_reload_handler(enclose! { (state) move |_| state.borrow_mut().reset() });
     listener.add_window_close_handler(
         enclose! { (state) move |_| state.borrow_mut().update_active_workspaces() },
     );
