@@ -4,6 +4,10 @@ A Hyprland IPC extension written in Rust to remove window decorations when only 
 
 There is currently no release cycle, so using this outside of Nix isn't ideal.
 
+## Disclaimer
+
+This is currently broken due to https://github.com/hyprwm/Hyprland/commit/10caa03ce5bc2ce8238c494d59405213d32ddead (https://github.com/hyprwm/Hyprland/issues/5691), I will implement a fix right after Hyprland does.
+
 ## Usage
 
 ### Nix
