@@ -3,15 +3,17 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+
+    systems.url = "github:nix-systems/default-linux";
     flake-parts = {
       url = "github:hercules-ci/flake-parts";
       inputs.nixpkgs-lib.follows = "nixpkgs";
     };
   };
 
-  outputs = inputs @ {flake-parts, ...}:
+  outputs = inputs @ {systems, flake-parts, ...}:
     flake-parts.lib.mkFlake {inherit inputs;} {
-      systems = ["x86_64-linux" "aarch64-linux"];
+      systems = import systems;
 
       perSystem = {pkgs, ...}: let
         no_decorations_when_only = pkgs.callPackage ./. {};
@@ -38,7 +40,5 @@
           inherit no_decorations_when_only;
         };
       };
-
-      # flake = {};
     };
 }

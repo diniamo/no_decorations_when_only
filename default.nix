@@ -29,6 +29,5 @@ in
       license = licenses.mit;
       maintainers = with maintainers; [diniamo];
       platforms = platforms.linux;
-      mainProgram = cargoToml.package.name;
     };
   }
