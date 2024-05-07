@@ -6,7 +6,13 @@ There is currently no release cycle, so using this outside of Nix isn't ideal.
 
 ## Disclaimer
 
-This is currently broken due to https://github.com/hyprwm/Hyprland/commit/10caa03ce5bc2ce8238c494d59405213d32ddead (https://github.com/hyprwm/Hyprland/issues/5691), I will implement a fix right after Hyprland does.
+This is currently broken due to:
+- https://github.com/hyprwm/Hyprland/commit/10caa03ce5bc2ce8238c494d59405213d32ddead (https://github.com/hyprwm/Hyprland/issues/5691)
+- https://github.com/hyprwm/Hyprland/commit/a5a648091760ac002120fab18247e5292b6482de
+
+I won't be fixing this in the future, due to the simple fact that this whole program can be replaced by 2 workspace rules:
+- `workspace=w[v1] s[false], gapsin:0, gapsout:0, border:false, shadow:false, rounding:false, decorate:false`
+- `workspace=f[1], gapsin:0, gapsout:0, border:false, shadow:false, rounding:false, decorate:false`
 
 ## Usage
 

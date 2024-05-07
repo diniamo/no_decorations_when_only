@@ -37,6 +37,7 @@ impl State {
                 .copied()
                 .unwrap_or(false)
         {
+            println!("Returning for workspace {}", workspace.name);
             return;
         }
 
@@ -60,6 +61,10 @@ impl State {
             .unwrap();
         } else {
             let ruleset = utils::get_ruleset_from_workspace(&self.initial_rules, workspace);
+            println!(
+                "Sending `{}`",
+                format!("{},{}", workspace.id, utils::format_for_command(&ruleset))
+            );
 
             Keyword::set(
                 "workspace",
@@ -75,7 +80,7 @@ impl State {
     fn update_active_workspaces(&mut self) {
         Monitors::get()
             .unwrap()
-            .iter()
+            .into_iter()
             .filter_map(|m| utils::get_workspace(&m.active_workspace.name))
             .for_each(|w| self.update_window_decorations(&w));
     }
